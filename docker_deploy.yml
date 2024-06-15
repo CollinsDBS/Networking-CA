@@ -1,3 +1,4 @@
+---
 - name: Deploy Apache Docker Container
   hosts: all
   become: yes
@@ -28,7 +29,8 @@
     - name: Create a Docker network
       docker_network:
         name: apache_network
-        subnet: 172.168.10.0/30
+        ipam_config:
+          - subnet: 172.168.10.0/30
 
     - name: Deploy Apache container
       docker_container:
@@ -40,10 +42,8 @@
           - name: apache_network
         ports:
           - "80:80"
-
-    - name: Copy index.html to container
-      copy:
-        src: ./index.html
-        dest: /usr/local/apache2/htdocs/index.html
-        container: apache_container
+        volumes:
+          - "{{ playbook_dir }}/html:/usr/local/apache2/htdocs/"
+        networks_cli_compatible: yes
+        container_default_behavior: compatibility
 
